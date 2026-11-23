@@ -12,7 +12,8 @@ const envSchema = z.object({
         "test"
     ]),
     PORT: z.coerce.number(),
-    FRONTEND_URL: z.url()
+    FRONTEND_URL: z.url(),
+    DATABASE_URL: z.url()
 });
 
 const parsedEnv = envSchema.safeParse(process.env);
