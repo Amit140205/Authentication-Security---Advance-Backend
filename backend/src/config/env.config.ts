@@ -13,7 +13,8 @@ const envSchema = z.object({
     ]),
     PORT: z.coerce.number(),
     FRONTEND_URL: z.url(),
-    DATABASE_URL: z.url()
+    DATABASE_URL: z.url(),
+    SALT_ROUNDS: z.coerce.number()
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

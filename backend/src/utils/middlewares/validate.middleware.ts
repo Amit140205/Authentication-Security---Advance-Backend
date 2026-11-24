@@ -1,0 +1,24 @@
+import { NextFunction, Request, Response } from "express";
+import { ZodObject } from "zod";
+import { AppError } from "../errors/AppError.js";
+
+export const validate = (schema: ZodObject<any>) => {
+    return (req: Request, _res: Response, next: NextFunction) => {
+        const result = schema.safeParse(req.body);
+
+        if (!result.success) {
+            const errors = result.error.issues.map((err) => ({
+                field: err.path.join(""),
+                message: err.message
+            }));
+
+            throw new AppError(
+                400,
+                errors.map((err) => (`${err.field}: ${err.message}`)).join(", ")
+            );
+        }
+
+        req.body = result.data;
+        next();
+    };
+};
