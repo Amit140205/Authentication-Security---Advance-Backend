@@ -1,9 +1,7 @@
-import { User } from "../../../generated/prisma/index.js";
+import { Session, User } from "../../../generated/prisma/index.js";
 import prisma from "../../lib/prisma.js";
-import { AppError } from "../../utils/errors/AppError.js";
-import { hashPassword } from "../../utils/helpers/password.helper.js";
 import { IAuthRepository } from "./auth.interface.js";
-import { RegisterUserDTO } from "./auth.schema.js";
+import { createSessionType, createUserType } from "./auth.types.js";
 
 export class AuthRepository implements IAuthRepository {
     async findUserByEmail(email: string): Promise<User | null> {
@@ -14,29 +12,15 @@ export class AuthRepository implements IAuthRepository {
         });
     }
 
-    async createUser(data: RegisterUserDTO): Promise<User> {
-        return await prisma.$transaction(async (tx) => {
-            const { email, password } = data;
-            const existingUser = await tx.user.findUnique({
-                where: {
-                    email
-                }
-            });
+    async createUser(data: createUserType): Promise<User> {
+        return await prisma.user.create({
+            data
+        });
+    }
 
-            if (existingUser) {
-                throw new AppError(400, "User with this email already exists!");
-            }
-
-            const hashedPassword = await hashPassword(password);
-
-            const newUser = await tx.user.create({
-                data: {
-                    email,
-                    passwordHash: hashedPassword
-                }
-            });
-
-            return newUser;
+    async createSession(data: createSessionType): Promise<Session> {
+        return await prisma.session.create({
+            data
         });
     }
 }
