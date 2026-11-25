@@ -1,6 +1,7 @@
 import { AppError } from "../../utils/errors/AppError.js";
-import { generateSessionId, hashRefreshToken, signAccessToken, signRefreshToken } from "../../utils/helpers/jwt.helper.js";
+import { generateSessionId, hashRefreshToken, signAccessToken, signRefreshToken, verifyRefreshToken } from "../../utils/helpers/jwt.helper.js";
 import { comparePassword, hashPassword } from "../../utils/helpers/password.helper.js";
+import { JWTPayload } from "../../utils/types/types.js";
 import { IAuthRepository } from "./auth.interface.js";
 import { toUserResponse } from "./auth.mapper.js";
 import { LoginUserDTO, RegisterUserDTO } from "./auth.schema.js";
@@ -120,5 +121,104 @@ export class AuthService {
         return {
             user: loggedInUser
         };
+    }
+
+    async refreshSession(refreshToken: string, userAgent: string, ipAddress: string): Promise<{
+        accessToken: string;
+        refreshToken: string;
+    }> {
+        if (!refreshToken) {
+            throw new AppError(401, "Refresh token missing");
+        }
+
+        let decoded: JWTPayload;
+
+        try {
+            decoded = verifyRefreshToken(refreshToken);
+        } catch (error) {
+            throw new AppError(401, "Invalid or expired token");
+        }
+
+        const { userId, sessionId } = decoded;
+
+        const session = await this.authRepo.findSessionBySessionId(sessionId);
+
+        if (!session) {
+            throw new AppError(401, "Session not found");
+        }
+
+        if (session.userId !== userId) {
+            throw new AppError(401, "Invalid session");
+        }
+
+        if (session.isRevoked) {
+            throw new AppError(401, "Session revoked");
+        }
+
+        if (session.expiredAt <= new Date()) {
+            throw new AppError(401, "Session expired");
+        }
+
+        const hashedRefreshToken = hashRefreshToken(refreshToken);
+
+        const isHashedRefreshTokenValid = hashedRefreshToken === session.refreshTokenHash;
+
+        // refresh token reuse detected
+        if (!isHashedRefreshTokenValid) {
+            await this.authRepo.revokeAllUserSession(userId);
+            throw new AppError(401, "Refresh token reuse detected");
+        }
+
+        const newAccessToken = signAccessToken({
+            userId,
+            sessionId
+        });
+
+        const newRefreshToken = signRefreshToken({
+            userId,
+            sessionId
+        });
+
+        const hashedNewRefreshToken = hashRefreshToken(newRefreshToken);
+
+        const isRotated = await this.authRepo.updateSession(sessionId, hashedRefreshToken, userId, {
+            refreshTokenHash: hashedNewRefreshToken,
+            userAgent,
+            ipAddress,
+            expiredAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+        });
+
+        // atomicity
+        // If update failed, another request may have already rotated this refresh token
+        if (!isRotated) {
+            throw new AppError(401, "Refresh token already used or invalid");
+        }
+
+        return {
+            accessToken: newAccessToken,
+            refreshToken: newRefreshToken
+        };
+    }
+
+    async logout(refreshToken: string): Promise<boolean> {
+        if (!refreshToken) {
+            throw new AppError(401, "Refresh token missing");
+        }
+
+        let decoded: JWTPayload;
+
+        try {
+            decoded = verifyRefreshToken(refreshToken);
+        } catch (error) {
+            throw new AppError(401, "Invalid or expired token");
+        }
+
+        const { userId, sessionId } = decoded;
+
+        return await this.authRepo.revokeSession(userId, sessionId);
+    }
+
+    async logoutAll(userId: string): Promise<boolean> {
+        return await this.authRepo.revokeAllUserSession(userId);
     }
 }

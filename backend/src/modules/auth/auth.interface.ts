@@ -11,4 +11,17 @@ export interface IAuthRepository {
 
     // session
     createSession(data: createSessionType): Promise<Session>;
+
+    findSessionBySessionId(sessionId: string): Promise<Session | null>;
+
+    revokeAllUserSession(userId: string): Promise<boolean>;
+
+    updateSession(sessionId: string, oldRefreshTokenHash: string, userId: string, data: {
+        refreshTokenHash: string,
+        userAgent?: string,
+        ipAddress?: string,
+        expiredAt: Date;
+    }): Promise<boolean>;
+
+    revokeSession(userId: string, sessionId: string): Promise<boolean>;
 }
