@@ -9,4 +9,4 @@ export const toUserResponse = (user: User): UserResponseType => {
         provider: user.provider,
         createdAt: user.createdAt
     };
-};
+}; 

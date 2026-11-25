@@ -19,14 +19,20 @@ app.use(express.json({ limit: "10kb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// request logger
+app.use(requestLogger);
+
 app.get("/health", (_req, res: Response) => {
     return res.status(200).json({
         success: true,
+        uptime: process.uptime(),
+        timestamp: new Date(Date.now()),
         message: "Server is healthy"
     });
 });
 
 import authRouter from "./modules/auth/auth.route.js";
+import { requestLogger } from "./utils/middlewares/request.logger.middleware.js";
 
 app.use("/api/v1/auth", authRouter);
 

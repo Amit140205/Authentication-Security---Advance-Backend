@@ -5,6 +5,6 @@ export type ApiResponse<T> = {
 };
 
 export type JWTPayload = {
-    sub: string;
+    userId: string;
     sessionId: string;
 };

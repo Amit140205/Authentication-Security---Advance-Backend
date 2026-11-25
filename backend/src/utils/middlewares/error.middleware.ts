@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { AppError } from "../errors/AppError.js";
 import { env } from "../../config/env.config.js";
+import { logger } from "../../config/logger.config.js";
 
 export const globalErrorHandler = (err: Error & Partial<AppError>, _req: Request, res: Response, _next: NextFunction) => {
 
@@ -8,6 +9,13 @@ export const globalErrorHandler = (err: Error & Partial<AppError>, _req: Request
     const statusCode = err.statusCode || 500;
     const status = err.status || "error";
     const stack = err.stack;
+
+    logger.error({
+        status,
+        statusCode,
+        message,
+        stack
+    });
 
     if (env.NODE_ENVIRONMENT === "development") {
         return res.status(statusCode).json({

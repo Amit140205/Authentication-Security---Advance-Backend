@@ -28,12 +28,12 @@ export class AuthService {
         const sessionId = generateSessionId();
 
         const accessToken = signAccessToken({
-            sub: newUser.id,
+            userId: newUser.id,
             sessionId
         });
 
         const refreshToken = signRefreshToken({
-            sub: newUser.id,
+            userId: newUser.id,
             sessionId
         });
 
@@ -49,7 +49,7 @@ export class AuthService {
         });
 
         return {
-            user: toUserResponse(newUser),
+            user: newUser,
             accessToken,
             refreshToken
         };
@@ -76,12 +76,12 @@ export class AuthService {
         const sessionId = generateSessionId();
 
         const accessToken = signAccessToken({
-            sub: existingUser.id,
+            userId: existingUser.id,
             sessionId
         });
 
         const refreshToken = signRefreshToken({
-            sub: existingUser.id,
+            userId: existingUser.id,
             sessionId
         });
 
@@ -100,6 +100,25 @@ export class AuthService {
             user: toUserResponse(existingUser),
             accessToken,
             refreshToken
+        };
+    }
+
+    async getLoggedInUser(user: {
+        userId: string;
+        sessionId: string;
+    }): Promise<{
+        user: UserResponseType;
+    }> {
+        const { userId } = user;
+
+        const loggedInUser = await this.authRepo.findUserByUserId(userId);
+
+        if (!loggedInUser) {
+            throw new AppError(404, "User not found");
+        }
+
+        return {
+            user: loggedInUser
         };
     }
 }
