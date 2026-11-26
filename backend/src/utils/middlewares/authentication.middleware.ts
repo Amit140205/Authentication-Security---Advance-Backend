@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import { AppError } from "../errors/AppError.js";
 import { verifyAccessToken } from "../helpers/jwt.helper.js";
 
-export const verifyUser = (req: Request, _res: Response, next: NextFunction) => {
+export const authenticationMiddleware = (req: Request, _res: Response, next: NextFunction) => {
     try {
         const authHeader = req.headers.authorization;
         if (!authHeader) {

@@ -5,6 +5,7 @@ import { env } from "./config/env.config.js";
 import cookieParser from "cookie-parser";
 import { globalErrorHandler } from "./utils/middlewares/error.middleware.js";
 import { AppError } from "./utils/errors/AppError.js";
+import { requestLogger } from "./utils/middlewares/request.logger.middleware.js";
 
 export const app = express();
 
@@ -32,9 +33,10 @@ app.get("/health", (_req, res: Response) => {
 });
 
 import authRouter from "./modules/auth/auth.route.js";
-import { requestLogger } from "./utils/middlewares/request.logger.middleware.js";
+import adminRouter from "./modules/admin/admin.route.js";
 
 app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/admin", adminRouter);
 
 app.use((req: Request, _res: Response, next: NextFunction) => {
     next(new AppError(404, `Cannot find ${req.originalUrl} on this server`));

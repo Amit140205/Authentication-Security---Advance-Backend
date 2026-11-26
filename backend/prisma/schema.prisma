@@ -17,6 +17,18 @@ enum AuthProvider {
   GOOGLE
 }
 
+enum Permissions {
+  MANAGE_USERS
+  DELETE_POSTS
+  VIEW_ANALYTICS
+  MANAGE_ROLES
+}
+
+enum Roles {
+  USER
+  ADMIN
+}
+
 model User {
   id              String       @id @default(uuid())
   email           String       @unique
@@ -56,7 +68,7 @@ model Session {
 
 model Role {
   id        String   @id @default(uuid())
-  name      String   @unique
+  name      Roles    @unique
   createdAt DateTime @default(now())
 
   userRoles       UserRole[]
@@ -64,9 +76,9 @@ model Role {
 }
 
 model Permission {
-  id        String   @id @default(uuid())
-  name      String   @unique
-  createdAt DateTime @default(now())
+  id        String      @id @default(uuid())
+  name      Permissions @unique
+  createdAt DateTime    @default(now())
 
   rolePermissions RolePermission[]
 }
@@ -82,6 +94,9 @@ model UserRole {
 
   // primary key
   @@id([userId, roleId])
+  // index
+  @@index([userId])
+  @@index([roleId])
 }
 
 model RolePermission {
@@ -95,4 +110,7 @@ model RolePermission {
 
   // primary key
   @@id([roleId, permissionId])
+  // index
+  @@index([roleId])
+  @@index([permissionId])
 }
