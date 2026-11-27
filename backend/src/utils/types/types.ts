@@ -8,3 +8,5 @@ export type JWTPayload = {
     userId: string;
     sessionId: string;
 };
+
+export type ValidateTarget = "body" | "params" | "query"; 

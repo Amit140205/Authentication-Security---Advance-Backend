@@ -1,10 +1,15 @@
 import { NextFunction, Request, Response } from "express";
 import { ZodObject } from "zod";
 import { AppError } from "../errors/AppError.js";
+import { ValidateTarget } from "../types/types.js";
 
-export const validate = (schema: ZodObject<any>) => {
+// making validate middleware dynamic
+// it can validate "body" | "params" | "query"
+
+export const validate = (schema: ZodObject<any>, target: ValidateTarget = "body") => {
     return (req: Request, _res: Response, next: NextFunction) => {
-        const result = schema.safeParse(req.body);
+        const data = req[target];
+        const result = schema.safeParse(data);
 
         if (!result.success) {
             const errors = result.error.issues.map((err) => ({
@@ -18,7 +23,7 @@ export const validate = (schema: ZodObject<any>) => {
             );
         }
 
-        req.body = result.data;
+        req[target] = result.data;
         next();
     };
 };

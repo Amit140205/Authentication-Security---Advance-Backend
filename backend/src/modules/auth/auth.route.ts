@@ -1,5 +1,13 @@
 import express from "express";
-import { loggedInUserController, loginUserController, logoutAllController, logoutController, refreshSessionController, registerUserController } from "./auth.controller.js";
+import {
+    getUserRolesAndPermissions,
+    loggedInUserController,
+    loginUserController,
+    logoutAllController,
+    logoutController, 
+    refreshSessionController, 
+    registerUserController
+} from "./auth.controller.js";
 import { loginUserSchema, registerUserSchema } from "./auth.schema.js";
 import { validate } from "../../utils/middlewares/validate.middleware.js";
 import { authenticationMiddleware } from "../../utils/middlewares/authentication.middleware.js";
@@ -17,5 +25,8 @@ router.route("/refresh-token").post(refreshSessionController);
 router.route("/logout").post(logoutController);
 
 router.route("/logout-all-devices").post(authenticationMiddleware, logoutAllController);
+
+// RBAC
+router.route("/me/roles-permissions").get(authenticationMiddleware, getUserRolesAndPermissions);
 
 export default router;

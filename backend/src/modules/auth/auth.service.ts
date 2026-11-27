@@ -1,3 +1,5 @@
+// import { logger } from "../../config/logger.config.js";
+import { Permissions, Roles } from "../../../generated/prisma/index.js";
 import { AppError } from "../../utils/errors/AppError.js";
 import { generateSessionId, hashRefreshToken, signAccessToken, signRefreshToken, verifyRefreshToken } from "../../utils/helpers/jwt.helper.js";
 import { comparePassword, hashPassword } from "../../utils/helpers/password.helper.js";
@@ -220,5 +222,46 @@ export class AuthService {
 
     async logoutAll(userId: string): Promise<boolean> {
         return await this.authRepo.revokeAllUserSession(userId);
+    }
+
+    // RBAC
+    async getUserRolesAndPermissions(userId: string): Promise<{
+        user: {
+            id: string;
+            email: string;
+        };
+        roles: Roles[];
+        permissions: Permissions[];
+    }> {
+        const user = await this.authRepo.getUserRolesAndPermissions(userId);
+
+        if (!user) {
+            throw new AppError(404, "User not found");
+        }
+
+        // logger.info({user});
+
+        // extract roles
+        const roles = user.userRoles.map((userRole) => (
+            userRole.role.name
+        ));
+
+        // extract permissions
+        const permissions = user.userRoles.flatMap((userRole) => (
+            userRole.role.rolePermissions.map((rolePermission) => (
+                rolePermission.permission.name
+            ))
+        ));
+
+        const uniquePermissions = [...new Set(permissions)];
+
+        return {
+            user: {
+                id: user.id,
+                email: user.email
+            },
+            roles,
+            permissions: uniquePermissions
+        };
     }
 }

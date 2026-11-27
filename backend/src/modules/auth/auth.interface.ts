@@ -1,5 +1,5 @@
 import { Session, User } from "../../../generated/prisma/index.js";
-import { createSessionType, createUserType, UserResponseType } from "./auth.types.js";
+import { createSessionType, createUserType, UserResponseType, UserWithPayloadType } from "./auth.type.js";
 
 export interface IAuthRepository {
     // user
@@ -24,4 +24,7 @@ export interface IAuthRepository {
     }): Promise<boolean>;
 
     revokeSession(userId: string, sessionId: string): Promise<boolean>;
+
+    // RBAC
+    getUserRolesAndPermissions(userId: string): Promise<UserWithPayloadType | null>;
 }

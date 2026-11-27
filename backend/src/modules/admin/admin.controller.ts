@@ -9,9 +9,28 @@ export const getAllUsersController = catchAsync(async (_req: Request, res: Respo
 
     sendResponse(res, 200, {
         success: true,
-        message: "User fetched successfully",
-        data: {
-            users: result
-        }
+        message: "All users fetched successfully",
+        data: result
+    });
+});
+
+export const getAllRolesController = catchAsync(async (_req: Request, res: Response) => {
+    const result = await adminService.getAllRoles();
+
+    sendResponse(res, 200, {
+        success: true,
+        message: "All roles fetched successfully",
+        data: result
+    });
+});
+
+export const getRoleByRoleIdController = catchAsync(async (req: Request, res: Response) => {
+    const { roleId } = req.params;
+    const result = await adminService.getRoleByRoleId(roleId as string);
+
+    sendResponse(res, 200, {
+        success: true,
+        message: "Role fetched successfully",
+        data: result
     });
 });

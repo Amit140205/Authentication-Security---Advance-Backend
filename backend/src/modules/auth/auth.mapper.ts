@@ -1,5 +1,5 @@
 import { User } from "../../../generated/prisma/index.js";
-import { UserResponseType } from "./auth.types.js";
+import { UserResponseType } from "./auth.type.js";
 
 export const toUserResponse = (user: User): UserResponseType => {
     return {

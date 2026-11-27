@@ -1,12 +1,11 @@
 import { Session, User } from "../../../generated/prisma/index.js";
 import prisma from "../../lib/prisma.js";
 import { IAuthRepository } from "./auth.interface.js";
-import { createSessionType, createUserType, UserResponseType } from "./auth.types.js";
+import { createSessionType, createUserType, UserResponseType, UserWithPayloadType } from "./auth.type.js";
 
 export class AuthRepository implements IAuthRepository {
 
     // user
-
     async findUserByEmail(email: string): Promise<User | null> {
         return await prisma.user.findUnique({
             where: {
@@ -44,7 +43,6 @@ export class AuthRepository implements IAuthRepository {
     }
 
     // session
-
     async createSession(data: createSessionType): Promise<Session> {
         return await prisma.session.create({
             data
@@ -110,5 +108,38 @@ export class AuthRepository implements IAuthRepository {
         });
 
         return result.count === 1;
+    }
+
+    // RBAC
+    async getUserRolesAndPermissions(userId: string): Promise<UserWithPayloadType | null> {
+        return await prisma.user.findUnique({
+            where: {
+                id: userId
+            },
+            select: {
+                id: true,
+                email: true,
+                userRoles: {
+                    select: {
+                        role: {
+                            select: {
+                                id: true,
+                                name: true,
+                                rolePermissions: {
+                                    select: {
+                                        permission: {
+                                            select: {
+                                                id: true,
+                                                name: true
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
     }
 }

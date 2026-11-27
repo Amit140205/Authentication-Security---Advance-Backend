@@ -88,3 +88,16 @@ export const logoutAllController = catchAsync(async (req: Request, res: Response
         message: result ? "User logged out of all devices" : "Already logged out"
     });
 });
+
+// RBAC
+export const getUserRolesAndPermissions = catchAsync(async (req: Request, res: Response) => {
+    const { user } = req;
+
+    const result = await authService.getUserRolesAndPermissions(user?.userId as string);
+
+    sendResponse(res, 200, {
+        success: true,
+        message: "User roles and permissions fetched successfully",
+        data: result
+    });
+});
