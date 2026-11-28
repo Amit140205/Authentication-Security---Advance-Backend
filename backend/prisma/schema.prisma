@@ -19,14 +19,19 @@ enum AuthProvider {
 
 enum Permissions {
   MANAGE_USERS
+  MANAGE_ROLES
+  CREATE_POSTS
   DELETE_POSTS
   VIEW_ANALYTICS
-  MANAGE_ROLES
+  MANAGE_SETTING
 }
 
 enum Roles {
-  USER
+  SUPER_ADMIN
   ADMIN
+  MODERATOR
+  EDITOR
+  MEMBER
 }
 
 model User {

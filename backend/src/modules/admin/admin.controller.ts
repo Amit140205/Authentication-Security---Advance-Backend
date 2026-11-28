@@ -34,3 +34,24 @@ export const getRoleByRoleIdController = catchAsync(async (req: Request, res: Re
         data: result
     });
 });
+
+export const createRoleWithPermissionsController = catchAsync(async (req: Request, res: Response) => {
+    const result = await adminService.createRoleWithPermissions(req.body);
+
+    sendResponse(res, 200, {
+        success: true,
+        message: "Role created successfully with permissions",
+        data: result
+    });
+});
+
+export const updateRolePermissionsController = catchAsync(async (req: Request, res: Response) => {
+    const { roleId } = req.params;
+    const result = await adminService.updateRolePermissions(roleId as string, req.body);
+
+    sendResponse(res, 200, {
+        success: true,
+        message: "Role permissions updated successfully",
+        data: result
+    });
+});

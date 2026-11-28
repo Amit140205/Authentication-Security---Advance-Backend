@@ -8,7 +8,7 @@ export type AllRolesWithPayloadType = Prisma.RoleGetPayload<{
 
         userRoles: {
             select: {
-                userId: true
+                userId: true;
             };
         },
 
@@ -86,4 +86,22 @@ export type ReturnRoleType = {
         name: string;
         assignedAt: Date;
     }[];
-}
+};
+
+export type UpdatedRolePermissionsPayloadType = Prisma.RoleGetPayload<{
+    select: {
+        id: true;
+        name: true;
+
+        rolePermissions: {
+            select: {
+                permission: {
+                    select: {
+                        id: true;
+                        name: true;
+                    };
+                };
+            };
+        };
+    };
+}>;

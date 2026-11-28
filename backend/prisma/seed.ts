@@ -19,7 +19,9 @@ async function main() {
             Permissions.MANAGE_USERS,
             Permissions.DELETE_POSTS,
             Permissions.VIEW_ANALYTICS,
-            Permissions.MANAGE_ROLES
+            Permissions.MANAGE_ROLES,
+            Permissions.CREATE_POSTS,
+            Permissions.MANAGE_SETTING
         ];
 
         // creating permissions
@@ -35,14 +37,14 @@ async function main() {
             });
         }
 
-        // creating admin role
-        const adminRole = await tx.role.upsert({
+        // creating super admin role
+        const superAdminRole = await tx.role.upsert({
             where: {
-                name: Roles.ADMIN
+                name: Roles.SUPER_ADMIN
             },
             update: {},
             create: {
-                name: Roles.ADMIN
+                name: Roles.SUPER_ADMIN
             }
         });
 
@@ -60,55 +62,55 @@ async function main() {
             await tx.rolePermission.upsert({
                 where: {
                     roleId_permissionId: {
-                        roleId: adminRole.id,
+                        roleId: superAdminRole.id,
                         permissionId: permission.id
                     }
                 },
                 update: {},
                 create: {
-                    roleId: adminRole.id,
+                    roleId: superAdminRole.id,
                     permissionId: permission.id
                 }
             });
         }
 
         // create initial admin user
-        const existingAdmin = await tx.user.findUnique({
+        const existingSuperAdmin = await tx.user.findUnique({
             where: {
-                email: env.ADMIN_EMAIL
+                email: env.SUPER_ADMIN_EMAIL
             }
         });
 
-        let adminUser;
+        let superAdminUser;
 
-        if (!existingAdmin) {
-            const hashedPassword = await hashPassword(env.ADMIN_PASSWORD);
+        if (!existingSuperAdmin) {
+            const hashedPassword = await hashPassword(env.SUPER_ADMIN_PASSWORD);
 
-            adminUser = await tx.user.create({
+            superAdminUser = await tx.user.create({
                 data: {
-                    email: env.ADMIN_EMAIL,
+                    email: env.SUPER_ADMIN_EMAIL,
                     passwordHash: hashedPassword
                 }
             });
 
-            logger.info("Admin user created successfully");
+            logger.info("Super Admin user created successfully");
         } else {
-            adminUser = existingAdmin;
-            logger.info("Admin user already exists");
+            superAdminUser = existingSuperAdmin;
+            logger.info("Super Admin user already exists");
         }
 
         // assign admin role to user
         await tx.userRole.upsert({
             where: {
                 userId_roleId: {
-                    userId: adminUser.id,
-                    roleId: adminRole.id
+                    userId: superAdminUser.id,
+                    roleId: superAdminRole.id
                 }
             },
             update: {},
             create: {
-                userId: adminUser.id,
-                roleId: adminRole.id
+                userId: superAdminUser.id,
+                roleId: superAdminRole.id
             }
         });
 
